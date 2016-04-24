@@ -417,7 +417,7 @@ var nodeLists = {
 		if (last.nextSibling) {
 			domMutate.insertBefore.call(last.parentNode, newFrag, last.nextSibling);
 		} else {
-			domMutate.appendChild.call(last.parentNode, newFrag, can.document);
+			domMutate.appendChild.call(last.parentNode, newFrag );
 		}
 	},
 	/**
@@ -451,7 +451,7 @@ var nodeLists = {
 		}
 	},
 	remove: function(elementsToBeRemoved){
-		var parent = elementsToBeRemoved[0];
+		var parent = elementsToBeRemoved[0] && elementsToBeRemoved[0].parentNode;
 		each(elementsToBeRemoved, function(child){
 			domMutate.removeChild.call(parent, child);
 		});
