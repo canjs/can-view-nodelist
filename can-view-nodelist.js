@@ -440,7 +440,7 @@ var nodeLists = {
 			selectedValue = parentNode.value;
 		}
 		if(oldElements.length === 1) {
-			domMutate.replaceChild.call(parentNode, newFrag, oldElements[0])
+			domMutate.replaceChild.call(parentNode, newFrag, oldElements[0]);
 		} else {
 			nodeLists.after(oldElements, newFrag);
 			nodeLists.remove(oldElements);
