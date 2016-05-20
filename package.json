@@ -27,7 +27,7 @@
     "document": "documentjs",
     "develop": "done-serve --static --develop --port 8080"
   },
-  "main": "dist/cjs/can-view-nodelist",
+  "main": "can-view-nodelist",
   "browser": {
     "transform": [
       "cssify"
@@ -38,23 +38,19 @@
       "cssify"
     ]
   },
-  "keywords": [],
+  "keywords": [
+    "canjs",
+    "canjs-plugin",
+    "donejs"
+  ],
   "system": {
-    "main": "can-view-nodelist",
     "configDependencies": [
       "live-reload"
-    ],
-    "npmIgnore": [
-      "documentjs",
-      "testee",
-      "generator-donejs",
-      "donejs-cli",
-      "steal-tools"
     ],
     "npmAlgorithm": "flat"
   },
   "dependencies": {
-    "can-util": "^3.0.0-pre.1"
+    "can-util": "^3.0.0-pre.21"
   },
   "devDependencies": {
     "documentjs": "^0.4.2",
