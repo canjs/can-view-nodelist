@@ -1,6 +1,7 @@
 var CID = require('can-util/js/cid/cid');
 var makeArray = require('can-util/js/make-array/make-array');
 var each = require('can-util/js/each/each');
+var namespace = require('can-util/namespace');
 var domMutate = require('can-util/dom/mutate/mutate');
 // # can/view/node_lists/node_list.js
 //
@@ -458,4 +459,4 @@ var nodeLists = {
 	},
 	nodeMap: nodeMap
 };
-module.exports = nodeLists;
+module.exports = namespace.nodeLists = nodeLists;
