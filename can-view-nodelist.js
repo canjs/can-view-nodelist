@@ -5,31 +5,6 @@ var namespace = require('can-util/namespace');
 var domMutate = require('can-util/dom/mutate/mutate');
 // # can/view/node_lists/node_list.js
 //
-// `can.view.nodeLists` are used to make sure "directly nested" live-binding
-// sections update content correctly.
-//
-// Consider the following template:
-//
-// ```
-// <div>
-// {{#if items.length}}
-//     Items:
-//         {{#items}}
-//             <label></label>
-//         {{/items}}
-// {{/if}}
-// </div>
-// ```
-//
-// The `{{#if}}` and `{{#items}}` seconds are "directly nested" because
-// they share the same `<div>` parent element.
-//
-// If `{{#items}}` changes the DOM by adding more `<labels>`,
-// `{{#if}}` needs to know about the `<labels>` to remove them
-// if `{{#if}}` is re-rendered.  `{{#if}}` would be re-rendered, for example, if
-// all items were removed.
-
-
 // ## Helpers
 // Some browsers don't allow expando properties on HTMLTextNodes
 // so let's try to assign a custom property, an 'expando' property.
@@ -57,12 +32,20 @@ var nodeMap = {},
 	// the element has a nodeName.
 	_id = 0,
 
-	// ## nodeLists.id
-	// Given a template node, create an id on the node as a expando
-	// property, or if the node is an HTMLTextNode and the browser
-	// doesn't support expando properties store the id with a
-	// reference to the text node in an internal collection then return
-	// the lookup id.
+/** @function can-view-nodelist.id id
+    @parent can-view-nodelist
+    @signature `nodeLists.id(node, localMap)`
+		@param {Object} node an HTML element, text node, or other object
+		@param {Object} [localMap] an optional map for text node IDs
+		@return {String} the ID value generated for the node.
+	
+	Given a template node, create an id on the node as a expando
+	property, or if the node is an HTMLTextNode and the browser
+	doesn't support expando properties store the id with a
+	reference to the text node in an internal collection then return
+	the lookup id.
+
+	*/
 	id = function (node, localMap) {
 		var _textNodeMap = localMap || textNodeMap;
 		var id = readId(node,_textNodeMap);
@@ -192,8 +175,18 @@ var nodeMap = {},
 var nodeLists = {
 	id: id,
 
-	// ## nodeLists.update
-	// Updates a nodeList with new items, i.e. when values for the template have changed.
+	/** @function can-view-nodelist.update update
+			@parent can-view-nodelist
+
+			@signature `nodeLists.update(nodeList, newNodes)`	
+
+			@param {ArrayLike} nodeList the list to update with the new nodes
+			@param {ArrayLike} newNodes the new nodes to update with
+	  
+			@return {Array}  the nodes that were removed from `nodeList`
+
+	   Updates a nodeList with new items, i.e. when values for the template have changed.
+	*/
 	update: function (nodeList, newNodes) {
 		// Unregister all childNodeLists.
 		var oldNodes = nodeLists.unregisterChildren(nodeList);
@@ -220,11 +213,19 @@ var nodeLists = {
 
 		return oldNodes;
 	},
-	// Goes through each node in the list. [el1, el2, el3, ...]
-	// Finds the nodeList for that node in repacements.  el1's nodeList might look like [el1, [el2]].
-	// Replaces that element and any other elements in the node list with the
-	// nodelist itself. resulting in [ [el1, [el2]], el3, ...]
-	// If a replacement is not found, it was improperly added, so we add it as a deepChild.
+  /**	
+  @function can-view-nodelist.nestReplacements nestReplacements
+	@parent can-view-nodelist
+	@signature `nodeLists.nestReplacement(list)`
+	@param {ArrayLike} list  The nodeList of nodes to go over
+	@return {void}
+
+  Goes through each node in the list. [el1, el2, el3, ...]
+	Finds the nodeList for that node in replacements.  el1's nodeList might look like [el1, [el2]].
+	Replaces that element and any other elements in the node list with the
+	nodelist itself. resulting in [ [el1, [el2]], el3, ...]
+	If a replacement is not found, it was improperly added, so we add it as a deepChild.
+	*/
 	nestReplacements: function(list){
 		var index = 0,
 			// temporary id map that is limited to this call
@@ -252,12 +253,18 @@ var nodeLists = {
 
 		list.replacements = [];
 	},
-	// ## nodeLists.nestList
-	// If a given list does not exist in the nodeMap then create an lookup
-	// id for it in the nodeMap and assign the list to it.
-	// If the the provided does happen to exist in the nodeMap update the
-	// elements in the list.
-	// @param {Array.<HTMLElement>} nodeList The nodeList being nested.
+	/**
+	@function can-view-nodelist.nestList nestList
+	@parent can-view-nodelist
+	@signature `nodeLists.nestList(list)`
+	@param {ArrayLike} list the nodeList being nested
+	@return {void}
+
+	If a given list does not exist in the nodeMap then create an lookup
+	id for it in the nodeMap and assign the list to it.
+	If the the provided does happen to exist in the nodeMap update the
+	elements in the list.
+	*/
 	nestList: function(list){
 		var index = 0;
 		while(index < list.length) {
@@ -275,10 +282,17 @@ var nodeLists = {
 		}
 	},
 
-	// ## nodeLists.last
-	// Return the last HTMLElement in a nodeList, if the last
-	// element is a nodeList, returns the last HTMLElement of
-	// the child list, etc.
+	/**
+	@function can-view-nodelist.last last
+	@parent can-view-nodelist
+	@signature `nodeLists.last(nodeList)`
+	@param {ArrayLike} nodeList a nodeList
+	@return {HTMLElement} the last element of the last list nested in this list.
+
+	Return the last HTMLElement in a nodeList; if the last
+	element is a nodeList, returns the last HTMLElement of
+	the child list, etc.
+	*/
 	last: function(nodeList){
 		var last = nodeList[nodeList.length - 1];
 		// If the last node in the list is not an HTMLElement
@@ -290,10 +304,17 @@ var nodeLists = {
 		}
 	},
 
-	// ## nodeLists.first
-	// Return the first HTMLElement in a nodeList, if the first
-	// element is a nodeList, returns the first HTMLElement of
-	// the child list, etc.
+	/**
+	@function can-view-nodelist.first first
+	@parent can-view-nodelist
+	@signature `nodeLists.first(nodeList)`
+	@param {ArrayLike} nodeList a nodeList
+	@return {HTMLElement} the first element of the first list nested in this list.
+
+	Return the first HTMLElement in a nodeList; if the first
+	element is a nodeList, returns the first HTMLElement of
+	the child list, etc.
+	*/	
 	first: function(nodeList) {
 		var first = nodeList[0];
 		// If the first node in the list is not an HTMLElement
@@ -316,8 +337,18 @@ var nodeLists = {
 		}
 		return items;
 	},
-	// ## nodeLists.register
-	// Registers a nodeList and returns the nodeList passed to register
+	/**
+	@function can-view-nodelist.register register
+	@parent can-view-nodelist
+	@signature `nodeLists.register(nodeList, unregistered, parent, directlyNested)`
+	@param {ArrayLike} nodeList a nodeList
+	@param {function()} unregistered a callback to call when the nodeList is unregistered
+	@param {ArrayLike} parent the parent nodeList of this nodeList
+	@param {Boolean} directlyNested true if nodes in the nodeList are direct children of the parent
+	@return {ArrayLike} the passed in nodeList
+
+	Registers a nodeList and returns the nodeList passed to register
+	*/
 	register: function (nodeList, unregistered, parent, directlyNested) {
 		// If a unregistered callback has been provided assign it to the nodeList
 		// as a property to be called when the nodeList is unregistred.
@@ -347,10 +378,16 @@ var nodeLists = {
 		return nodeList;
 	},
 
-	// ## nodeLists.unregisterChildren
-	// Unregister all childen within the provided list and return the
-	// unregistred nodes.
-	// @param {Array.<HTMLElement>} nodeList The child list to unregister.
+	/**
+		@function can-view-nodelist.unregisterChildren unregisterChildren
+		@parent can-view-nodelist
+		@signature `nodeLists.unregisterChildren(nodeList)`
+		@param {ArrayLike} nodeList The nodeList of child nodes to unregister.
+		@return {Array} the list of all nodes that were unregistered
+
+		Unregister all childen within the provided list and return the
+		unregistred nodes.
+	*/
 	unregisterChildren: function(nodeList){
 		var nodes = [];
 		// For each node in the nodeList we want to compute it's id
@@ -378,10 +415,18 @@ var nodeLists = {
 		return nodes;
 	},
 
-	// ## nodeLists.unregister
-	// Unregister's a nodeList and returns the unregistered nodes.
-	// Call if the nodeList is no longer being updated. This will
-	// also unregister all child nodeLists.
+	/**
+		@function can-view-nodelist.unregister unregister
+		@parent can-view-nodelist
+		@signature `nodeLists.unregister(nodeList, isChild)`
+		@param {ArrayLike} nodeList a nodeList to unregister from its parent
+		@param {isChild}  true if the nodeList is a direct child, false if a deep child
+		@return {Array}   a list of all nodes that were unregistered
+
+		Unregister's a nodeList and returns the unregistered nodes.
+		Call if the nodeList is no longer being updated. This will
+		also unregister all child nodeLists.
+	*/
 	unregister: function (nodeList, isChild) {
 		var nodes = nodeLists.unregisterChildren(nodeList, true);
 
@@ -404,13 +449,15 @@ var nodeLists = {
 		return nodes;
 	},
 	/**
-	 * @function can.view.elements.after
-	 * @parent can.view.elements
+	 * @function can-view-nodelist.after after
+	 * @parent can-view-nodelist
+	 * @signature `nodeLists.after(oldElements, newFrag)`
+	 * @param {ArrayLike} oldElements the nodeList to use as reference
+	 * @param {DocumentFragment} newFrag the fragment to insert
+	 * @return {void}
 	 *
-	 * Inserts newFrag after oldElements.
+	 * Inserts `newFrag` after `oldElements`.
 	 *
-	 * @param {Array.<HTMLElement>} oldElements
-	 * @param {DocumentFragment} newFrag
 	 */
 	after: function (oldElements, newFrag) {
 		var last = oldElements[oldElements.length - 1];
@@ -422,13 +469,15 @@ var nodeLists = {
 		}
 	},
 	/**
-	 * @function can.view.elements.replace
-	 * @parent can.view.elements
+	 * @function can-view-nodelist.replace replace
+	 * @parent can-view-nodelist
+	 * @signature `nodeLists.replace(oldElements, newFrag)`
+	 * @param {ArrayLike} oldElements the list elements to remove
+	 * @param {DocumentFragment} newFrag the fragment to replace the old elements
+	 * @return {void}
 	 *
-	 * Replaces `oldElements` with `newFrag`
+	 * Replaces `oldElements` with `newFrag`.
 	 *
-	 * @param {Array.<HTMLElement>} oldElements
-	 * @param {DocumentFragment} newFrag
 	 */
 	replace: function (oldElements, newFrag) {
 		// The following helps make sure that a selected <option> remains
@@ -451,6 +500,16 @@ var nodeLists = {
 			parentNode.value = selectedValue;
 		}
 	},
+	/**
+	 * @function can-view-nodelist.remove remove
+	 * @parent can-view-nodelist
+	 * @signature `nodeLists.remove(elementsToBeRemoved)`
+	 * @param {ArrayLike} oldElements the list of Elements to remove (must have a common parent)
+	 * @return {void}
+	 *
+	 * Remove all Nodes in `oldElements` from the DOM.
+	 *
+	 */
 	remove: function(elementsToBeRemoved){
 		var parent = elementsToBeRemoved[0] && elementsToBeRemoved[0].parentNode;
 		each(elementsToBeRemoved, function(child){
