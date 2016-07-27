@@ -1,7 +1,7 @@
 @module {{}} can-view-nodelist
 @parent can-infrastructure
-
-# can-view-nodelist
+@group can-view-nodelist/methods methods
+@group can-view-nodelist/types types
 
 @description Adds nesting of text nodes
 
