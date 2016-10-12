@@ -2,6 +2,7 @@
 @parent can-infrastructure
 @group can-view-nodelist/methods methods
 @group can-view-nodelist/types types
+@package ./package.json
 
 @description Adds nesting of text nodes
 
