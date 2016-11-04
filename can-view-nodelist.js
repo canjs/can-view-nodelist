@@ -1,94 +1,16 @@
-var CID = require('can-util/js/cid/cid');
 var makeArray = require('can-util/js/make-array/make-array');
 var each = require('can-util/js/each/each');
 var namespace = require('can-util/namespace');
 var domMutate = require('can-util/dom/mutate/mutate');
+
+var CIDMap = require("can-util/js/cid-map/cid-map");
 // # can/view/node_lists/node_list.js
 //
 // ## Helpers
-// Some browsers don't allow expando properties on HTMLTextNodes
-// so let's try to assign a custom property, an 'expando' property.
-// We use this boolean to determine how we are going to hold on
-// to HTMLTextNode within a nodeList.  More about this in the 'id'
-// function.
-var canExpando = true;
-try {
-	document.createTextNode('')._ = 0;
-} catch (ex) {
-	canExpando = false;
-}
 
 // A mapping of element ids to nodeList id allowing us to quickly find an element
 // that needs to be replaced when updated.
-var nodeMap = {},
-	// A mapping of ids to text nodes, this map will be used in the
-	// case of the browser not supporting expando properties.
-	textNodeMap = {},
-	// The name of the expando property; the value returned
-	// given a nodeMap key.
-	expando = 'stache_' + Math.random(),
-	// The id used as the key in our nodeMap, this integer
-	// will be preceded by 'element_' or 'obj_' depending on whether
-	// the element has a nodeName.
-	_id = 0,
-
-/** @function can-view-nodelist.id id
-    @hide
-    @parent can-view-nodelist
-    @signature `nodeLists.id(node, localMap)`
-		@param {Object} node an HTML element, text node, or other object
-		@param {Object} [localMap] an optional map for text node IDs
-		@return {String} the ID value generated for the node.
-
-	Given a template node, create an id on the node as a expando
-	property, or if the node is an HTMLTextNode and the browser
-	doesn't support expando properties store the id with a
-	reference to the text node in an internal collection then return
-	the lookup id.
-
-	*/
-	id = function (node, localMap) {
-		var _textNodeMap = localMap || textNodeMap;
-		var id = readId(node,_textNodeMap);
-		if(id) {
-			return id;
-		} else {
-			// If the browser supports expando properties or the node
-			// provided is not an HTMLTextNode, we don't need to work
-			// with the internal textNodeMap and we can place the property
-			// on the node.
-			if (canExpando || node.nodeType !== 3) {
-				++_id;
-				return node[expando] = (node.nodeName ? 'element_' : 'obj_') + _id;
-			} else {
-				// If we didn't find the node, we need to register it and return
-				// the id used.
-				++_id;
-
-				// If we didn't find the node, we need to register it and return
-				// the id used.
-				//
-				// We have to store the node itself because of the browser's lack
-				// of support for expando properties (i.e. we can't use a look-up
-				// table and store the id on the node as a custom property).
-				_textNodeMap['text_' + _id] = node;
-				return 'text_' + _id;
-			}
-		}
-	},
-	readId = function(node,textNodeMap){
-		if (canExpando || node.nodeType !== 3) {
-			return node[expando];
-		} else {
-			// The nodeList has a specific collection for HTMLTextNodes for
-			// (older) browsers that do not support expando properties.
-			for (var textNodeID in textNodeMap) {
-				if (textNodeMap[textNodeID] === node) {
-					return textNodeID;
-				}
-			}
-		}
-	},
+var nodeMap = new CIDMap(),
 	splice = [].splice,
 	push = [].push,
 
@@ -111,20 +33,20 @@ var nodeMap = {},
 		}
 		return count;
 	},
+	// replacements is an array of nodeLists
+	// makes a map of the first node in the replacement to the nodeList
 	replacementMap = function(replacements, idMap){
-		var map = {};
+		var map = new CIDMap();
 		for(var i = 0, len = replacements.length; i < len; i++){
 			var node = nodeLists.first(replacements[i]);
-			map[id(node, idMap)] = replacements[i];
+			map.set(node, replacements[i]);
 		}
 		return map;
 	},
-	addUnfoundAsDeepChildren = function(list, rMap, foundIds){
-		for(var repId in rMap) {
-			if(!foundIds[repId]) {
-				list.newDeepChildren.push(rMap[repId]);
-			}
-		}
+	addUnfoundAsDeepChildren = function(list, rMap){
+		rMap.forEach(function(replacement){
+			list.newDeepChildren.push(replacement);
+		});
 	};
 
 // ## Registering & Updating
@@ -174,7 +96,6 @@ var nodeMap = {},
 // that nodeList has been replaced by a parent nodeList.  This is
 // useful for tearing down live-binding.
 var nodeLists = {
-	id: id,
 
    /**
 	* @function can-view-nodelist.update update
@@ -235,23 +156,21 @@ var nodeLists = {
 			idMap = {},
 			// replacements are in reverse order in the DOM
 			rMap = replacementMap(list.replacements, idMap),
-			rCount = list.replacements.length,
-			foundIds = {};
+			rCount = list.replacements.length;
 
 		while(index < list.length && rCount) {
 			var node = list[index],
-				nodeId = readId(node, idMap),
-				replacement = rMap[nodeId];
+				replacement = rMap.get(node);
 			if( replacement ) {
+				rMap["delete"](node);
 				list.splice( index, itemsInChildListTree(replacement), replacement );
-				foundIds[nodeId] = true;
 				rCount--;
 			}
 			index++;
 		}
 		// Only do this if
 		if(rCount) {
-			addUnfoundAsDeepChildren(list, rMap, foundIds );
+			addUnfoundAsDeepChildren(list, rMap );
 		}
 
 		list.replacements = [];
@@ -273,14 +192,18 @@ var nodeLists = {
 		var index = 0;
 		while(index < list.length) {
 			var node = list[index],
-				childNodeList = nodeMap[id(node)];
+				childNodeList = nodeMap.get(node);
+
+
 			if(childNodeList) {
+				// if this node is in another nodelist
 				if(childNodeList !== list) {
+					// update this nodeList to point to the childNodeList
 					list.splice( index, itemsInChildListTree(childNodeList), childNodeList );
 				}
 			} else {
 				// Indicate the new nodes belong to this list.
-				nodeMap[id(node)] = list;
+				nodeMap.set(node, list);
 			}
 			index++;
 		}
@@ -364,7 +287,6 @@ var nodeLists = {
 	register: function (nodeList, unregistered, parent, directlyNested) {
 		// If a unregistered callback has been provided assign it to the nodeList
 		// as a property to be called when the nodeList is unregistred.
-		CID(nodeList);
 		nodeList.unregistered = unregistered;
 		nodeList.parentList = parent;
 		nodeList.nesting = parent && typeof parent.nesting !== 'undefined' ? parent.nesting + 1 : 0;
@@ -410,7 +332,7 @@ var nodeLists = {
 			// nodes.
 			if(node.nodeType) {
 				if(!nodeList.replacements) {
-					delete nodeMap[id(node)];
+					nodeMap["delete"](node);
 				}
 
 				nodes.push(node);

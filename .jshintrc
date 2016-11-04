@@ -1,7 +1,6 @@
 {
 	"globals": {
 		"steal": true,
-		"can": true,
 		"QUnit": true,
 		"System": true,
 		"SimpleDOM": true,
