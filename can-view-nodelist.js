@@ -1,6 +1,6 @@
 var makeArray = require('can-util/js/make-array/make-array');
 var each = require('can-util/js/each/each');
-var namespace = require('can-util/namespace');
+var namespace = require('can-namespace');
 var domMutate = require('can-util/dom/mutate/mutate');
 
 var CIDMap = require("can-util/js/cid-map/cid-map");
