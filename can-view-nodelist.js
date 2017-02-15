@@ -6,8 +6,21 @@ var domMutate = require('can-util/dom/mutate/mutate');
 var CIDMap = require("can-util/js/cid-map/cid-map");
 // # can/view/node_lists/node_list.js
 //
-// ## Helpers
 
+// ### What's a nodeList?
+// 
+// A nodelist is an array of DOM nodes (elements text nodes and DOM elements) and/or other
+// nodeLists, along with non-array-indexed properties that manage relationships between lists.  
+// These properties are:
+// 
+// * deepChildren   children that couldn't be found by iterating over the nodeList when nesting
+// * nesting          nested level of a nodelist (parent's nesting plus 1)
+// * newDeepChildren  same as deepChildren but stored before registering with update()
+// * parentList   the direct parent nodeList of this nodeList
+// * replacements   an array of nodeLists meant to replace virtual nodes
+// * unregistered   a callback to call when unregistering a nodeList
+
+// ## Helpers
 // A mapping of element ids to nodeList id allowing us to quickly find an element
 // that needs to be replaced when updated.
 var nodeMap = new CIDMap(),
@@ -35,7 +48,7 @@ var nodeMap = new CIDMap(),
 	},
 	// replacements is an array of nodeLists
 	// makes a map of the first node in the replacement to the nodeList
-	replacementMap = function(replacements, idMap){
+	replacementMap = function(replacements){
 		var map = new CIDMap();
 		for(var i = 0, len = replacements.length; i < len; i++){
 			var node = nodeLists.first(replacements[i]);
@@ -54,7 +67,19 @@ var nodeMap = new CIDMap(),
 // To keep all live-bound sections knowing which elements they are managing,
 // all live-bound elments are registered and updated when they change.
 //
-// For example, the above template, when rendered with data like:
+// For example, here's a template:
+//     
+//     <div>
+//     	{{#if items.length}}
+//     		Items:
+//     		{{#each items}}
+//     			<label>{{.}}</label>
+//     		{{/each}}
+//     	{{/if}}
+//     </div>
+// 
+// 
+// the above template, when rendered with data like:
 //
 //     data = new can.Map({
 //         items: ["first","second"]
@@ -63,21 +88,21 @@ var nodeMap = new CIDMap(),
 // This will first render the following content:
 //
 //     <div>
-//         <span data-view-id='5'/>
+//         <#text "">
 //     </div>
 //
-// When the `5` callback is called, this will register the `<span>` like:
+// The empty text node has a callback which, when called, will register it like:
 //
-//     var ifsNodes = [<span 5>]
+//     var ifsNodes = [<#text "">]
 //     nodeLists.register(ifsNodes);
 //
 // And then render `{{if}}`'s contents and update `ifsNodes` with it:
 //
-//     nodeLists.update( ifsNodes, [<"\nItems:\n">, <span data-view-id="6">] );
+//     nodeLists.update( ifsNodes, [<#text "\nItems:\n">, <#text "">] );
 //
-// Next, hookup `6` is called which will regsiter the `<span>` like:
+// Next, that final text node's callback is called which will regsiter it like:
 //
-//     var eachsNodes = [<span 6>];
+//     var eachsNodes = [<#text "">];
 //     nodeLists.register(eachsNodes);
 //
 // And then it will render `{{#each}}`'s content and update `eachsNodes` with it:
@@ -87,7 +112,7 @@ var nodeMap = new CIDMap(),
 // As `nodeLists` knows that `eachsNodes` is inside `ifsNodes`, it also updates
 // `ifsNodes`'s nodes to look like:
 //
-//     [<"\nItems:\n">,<label>,<label>]
+//     [<#text "\nItems:\n">,<label>,<label>]
 //
 // Now, if all items were removed, `{{#if}}` would be able to remove
 // all the `<label>` elements.
@@ -152,10 +177,8 @@ var nodeLists = {
 	*/
 	nestReplacements: function(list){
 		var index = 0,
-			// temporary id map that is limited to this call
-			idMap = {},
 			// replacements are in reverse order in the DOM
-			rMap = replacementMap(list.replacements, idMap),
+			rMap = replacementMap(list.replacements),
 			rCount = list.replacements.length;
 
 		while(index < list.length && rCount) {
