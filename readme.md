@@ -1,5 +1,7 @@
 # can-view-nodelist
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/canjs/can-view-nodelist.svg)](https://greenkeeper.io/)
+
 [![Build Status](https://travis-ci.org/canjs/can-view-nodelist.png?branch=master)](https://travis-ci.org/canjs/can-view-nodelist)
 
 Adds nesting of text nodes
