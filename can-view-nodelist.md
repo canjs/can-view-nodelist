@@ -1,5 +1,6 @@
 @module {{}} can-view-nodelist
-@parent can-infrastructure
+@parent can-views
+@collection can-infrastructure
 @group can-view-nodelist/methods methods
 @group can-view-nodelist/types types
 @package ./package.json
