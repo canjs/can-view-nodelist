@@ -32,7 +32,7 @@ test('unregisters child nodeLists', function () {
 		ifChildNodes = ifPreHookupFrag.childNodes,
 		ifEls = makeArray(ifChildNodes);
 
-    
+
 	nodeLists.replace([ifChildNodes[1]], spansFrag);
 
 	// 4 because 2 elements are inserted, and ifChildNodes is live
