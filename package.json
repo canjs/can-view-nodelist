@@ -1,6 +1,6 @@
 {
   "name": "can-view-nodelist",
-  "version": "4.0.0-pre.0",
+  "version": "4.0.0-pre.1",
   "description": "Adds nesting of text nodes",
   "homepage": "http://canjs.com",
   "repository": {
