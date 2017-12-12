@@ -1,15 +1,18 @@
+var makeArray = require('can-util/js/make-array/make-array');
+var each = require('can-util/js/each/each');
 var namespace = require('can-namespace');
-var canReflect = require('can-reflect');
 var domMutate = require('can-util/dom/mutate/mutate');
+
+var CIDMap = require("can-util/js/cid-map/cid-map");
 // # can/view/node_lists/node_list.js
 //
 
 // ### What's a nodeList?
-//
+// 
 // A nodelist is an array of DOM nodes (elements text nodes and DOM elements) and/or other
-// nodeLists, along with non-array-indexed properties that manage relationships between lists.
+// nodeLists, along with non-array-indexed properties that manage relationships between lists.  
 // These properties are:
-//
+// 
 // * deepChildren   children that couldn't be found by iterating over the nodeList when nesting
 // * nesting          nested level of a nodelist (parent's nesting plus 1)
 // * newDeepChildren  same as deepChildren but stored before registering with update()
@@ -20,7 +23,7 @@ var domMutate = require('can-util/dom/mutate/mutate');
 // ## Helpers
 // A mapping of element ids to nodeList id allowing us to quickly find an element
 // that needs to be replaced when updated.
-var nodeMap = new Map(),
+var nodeMap = new CIDMap(),
 	splice = [].splice,
 	push = [].push,
 
@@ -46,7 +49,7 @@ var nodeMap = new Map(),
 	// replacements is an array of nodeLists
 	// makes a map of the first node in the replacement to the nodeList
 	replacementMap = function(replacements){
-		var map = new Map();
+		var map = new CIDMap();
 		for(var i = 0, len = replacements.length; i < len; i++){
 			var node = nodeLists.first(replacements[i]);
 			map.set(node, replacements[i]);
@@ -65,7 +68,7 @@ var nodeMap = new Map(),
 // all live-bound elments are registered and updated when they change.
 //
 // For example, here's a template:
-//
+//     
 //     <div>
 //     	{{#if items.length}}
 //     		Items:
@@ -74,8 +77,8 @@ var nodeMap = new Map(),
 //     		{{/each}}
 //     	{{/if}}
 //     </div>
-//
-//
+// 
+// 
 // the above template, when rendered with data like:
 //
 //     data = new can.Map({
@@ -136,7 +139,7 @@ var nodeLists = {
 		// Unregister all childNodeLists.
 		var oldNodes = nodeLists.unregisterChildren(nodeList);
 
-		newNodes = canReflect.toArray(newNodes);
+		newNodes = makeArray(newNodes);
 
 		var oldListLength = nodeList.length;
 
@@ -347,7 +350,7 @@ var nodeLists = {
 		var nodes = [];
 		// For each node in the nodeList we want to compute it's id
 		// and delete it from the nodeList's internal map.
-		nodeList.forEach(function (node) {
+		each(nodeList, function (node) {
 			// If the node does not have a nodeType it is an array of
 			// nodes.
 			if(node.nodeType) {
@@ -363,7 +366,7 @@ var nodeLists = {
 			}
 		});
 
-		(nodeList.deepChildren || []).forEach(function(nodeList){
+		each(nodeList.deepChildren, function(nodeList){
 			nodeLists.unregister(nodeList, true);
 		});
 
@@ -470,7 +473,7 @@ var nodeLists = {
 	 */
 	remove: function(elementsToBeRemoved){
 		var parent = elementsToBeRemoved[0] && elementsToBeRemoved[0].parentNode;
-		elementsToBeRemoved.forEach(function(child){
+		each(elementsToBeRemoved, function(child){
 			domMutate.removeChild.call(parent, child);
 		});
 	},
