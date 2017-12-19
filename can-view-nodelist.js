@@ -1,9 +1,6 @@
-var makeArray = require('can-util/js/make-array/make-array');
-var each = require('can-util/js/each/each');
 var namespace = require('can-namespace');
-var domMutate = require('can-util/dom/mutate/mutate');
+var domMutate = require('can-dom-mutate/node');
 
-var CIDMap = require("can-util/js/cid-map/cid-map");
 // # can/view/node_lists/node_list.js
 //
 
@@ -23,7 +20,7 @@ var CIDMap = require("can-util/js/cid-map/cid-map");
 // ## Helpers
 // A mapping of element ids to nodeList id allowing us to quickly find an element
 // that needs to be replaced when updated.
-var nodeMap = new CIDMap(),
+var nodeMap = new Map(),
 	splice = [].splice,
 	push = [].push,
 
@@ -49,7 +46,7 @@ var nodeMap = new CIDMap(),
 	// replacements is an array of nodeLists
 	// makes a map of the first node in the replacement to the nodeList
 	replacementMap = function(replacements){
-		var map = new CIDMap();
+		var map = new Map();
 		for(var i = 0, len = replacements.length; i < len; i++){
 			var node = nodeLists.first(replacements[i]);
 			map.set(node, replacements[i]);
@@ -139,7 +136,11 @@ var nodeLists = {
 		// Unregister all childNodeLists.
 		var oldNodes = nodeLists.unregisterChildren(nodeList);
 
-		newNodes = makeArray(newNodes);
+		var arr = [];
+		for (var i = 0, ref = arr.length = newNodes.length; i < ref; i++) {
+ 			arr[i] = newNodes[i];
+		} // see https://jsperf.com/nodelist-to-array
+		newNodes = arr;
 
 		var oldListLength = nodeList.length;
 
@@ -350,7 +351,8 @@ var nodeLists = {
 		var nodes = [];
 		// For each node in the nodeList we want to compute it's id
 		// and delete it from the nodeList's internal map.
-		each(nodeList, function (node) {
+		for (var n = 0; n < nodeList.length; n++) {
+			var node = nodeList[n];
 			// If the node does not have a nodeType it is an array of
 			// nodes.
 			if(node.nodeType) {
@@ -364,11 +366,14 @@ var nodeLists = {
 				// the nodeList.
 				push.apply(nodes, nodeLists.unregister(node, true));
 			}
-		});
+		}
 
-		each(nodeList.deepChildren, function(nodeList){
-			nodeLists.unregister(nodeList, true);
-		});
+		var deepChildren = nodeList.deepChildren;
+		if (deepChildren) {
+			for (var l = 0; l < deepChildren.length; l++) {
+				nodeLists.unregister(deepChildren[l], true);
+			}
+		}		
 
 		return nodes;
 	},
@@ -473,9 +478,9 @@ var nodeLists = {
 	 */
 	remove: function(elementsToBeRemoved){
 		var parent = elementsToBeRemoved[0] && elementsToBeRemoved[0].parentNode;
-		each(elementsToBeRemoved, function(child){
-			domMutate.removeChild.call(parent, child);
-		});
+		for (var i = 0; i < elementsToBeRemoved.length; i++) {
+			domMutate.removeChild.call(parent, elementsToBeRemoved[i]);
+		}
 	},
 	nodeMap: nodeMap
 };

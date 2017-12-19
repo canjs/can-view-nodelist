@@ -1,10 +1,6 @@
 {
   "name": "can-view-nodelist",
-<<<<<<< HEAD
   "version": "4.0.0-pre.2",
-=======
-  "version": "3.1.1",
->>>>>>> Revert "Major"
   "description": "Adds nesting of text nodes",
   "homepage": "http://canjs.com",
   "repository": {
@@ -38,6 +34,7 @@
     "donejs"
   ],
   "dependencies": {
+    "can-dom-mutate": "<2.0.0",
     "can-namespace": "1.0.0",
     "can-util": "^3.9.5"
   },
