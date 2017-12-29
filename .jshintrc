@@ -20,9 +20,9 @@
 		"start": true,
 		"stop": true,
 		"global": true,
-		"Promise": true,
-		"Map": true
+		"Promise": true
 	},
+	"esversion": 6,
 	"strict": false,
 	"curly": true,
 	"eqeqeq": true,
