@@ -23,23 +23,23 @@ From there on, there are two widly different code paths needed when registering 
 
 The other is when there is a supplied parent nodeList, as happens in nodes directly registered in `can-component` and `can-stache`.  Unlike the previous case which sets the nodeList directly on the global nodeMap, the parent case is transactional and requires and update step.  In the parent case we have three possible paths to go down:
 
-* A special case is to register and pass `true` as the parent nodeList.  This is a case for when a nodeList intends to be a parentList to another nodeList, but it is not itself being registered to a parentList. 
+* A special case is to register and pass `true` as the parent nodeList.  This is a case for when a nodeList intends to be a parentList to another nodeList, but it is not itself being registered to a parentList.
 
-* The case with a parent nodeList and directlyNested having a truthy value, pushes the nodeList onto the parent nodeList's `replacements` (the nodeList is pushed as a whole rather than its elements).  `replacements` is used when updating the nodeList; this essentially means that updating a _parent_ nodeList with new nodes is _transactional_. 
+* The case with a parent nodeList and directlyNested having a truthy value, pushes the nodeList onto the parent nodeList's `replacements` (the nodeList is pushed as a whole rather than its elements).  `replacements` is used when updating the nodeList; this essentially means that updating a _parent_ nodeList with new nodes is _transactional_.
 
 * The case with a parent nodeList and directlyNested having a falsy value, pushes the nodeList onto the parent nodeList's `newDeepChildren` (the nodeList is pushed as a whole rather than its elements).  Again, because registration with a parent is transactional, `newDeepChildren` will be set as `deepChildren` when `update` is called.
 
 Here's an example of registering a list as a deep child (not a replacement) of another list:
 
 ```javascript
-	list1 = [document.createTextNode("")];
-	list2 = [document.createTextNode("a"), document.createTextNode("1")];
+	var list1 = [document.createTextNode("")];
+	var list2 = [document.createTextNode("a"), document.createTextNode("1")];
 
 	nodeLists.register(list1, null, true)
 	nodeLists.register(list2, null, list1)
 
 	list1.deepChildren // -> []
-	list1.newDeepChildren -> [Array[2]]
+	list1.newDeepChildren // -> [Array[2]]
 	list1.newDeepChildren[0] === list2 // -> true
 	list2.parentList === list1 // -> true
 
@@ -72,7 +72,7 @@ Since span1 comes first, it will be the key to recognizing the spans list while 
 To demonstrate register a list of nodes that covers the spans and the label, and adds in new texts
 
 	[text1, span1, span2, text2, label2]
-		
+
 nestList() will iterate over this list, and when it finds a match, it will replace contiguous nodes
 with the list that contains them.  For efficiency, this always assumes that the subsequence of nodes
 replaced by a list (keyed on its first element in the map) is the same as the sequence of nodes in the
@@ -144,11 +144,12 @@ There are library functions in nodeLists for working with the nodes in a nodeLis
 Here's the source of `can.view.live.replace()`:
 
 ```javascript
+{
 	replace: function (nodes, val, teardown) {
 		// #### replace
 		// Replaces one element with some content while keeping nodeLists data
 		// correct.
-		// 
+		//
 		// Take a copy of old nodeList
 		var oldNodes = nodes.slice(0),
 			frag = makeFrag(val);
@@ -159,7 +160,8 @@ Here's the source of `can.view.live.replace()`:
 		// Replace old nodes with new on the DOM
 		nodeLists.replace(oldNodes, frag);
 		return nodes;
-	},
+	}
+}
 ```
 
 This is generally how the flow works when working with the global nodeMap.  First be sure that the nodeList is `register()`ed to have all of the trees and everything contained in the nodeMap, then `update()` the nodeList to have the new nodes from the frag (this doesn't call the `teardown` supplied here but it does call unregister functions during any child nodeList's registration), then finally `replace()` the old nodes in the DOM with the content of the fragment.
@@ -185,16 +187,17 @@ Farther down this function, a `renderer` callback references this nodelist and h
 So now when this is called, `localPartialName` is either a function (from the scope), or it's a string (referencing the DOM) and gets resolved to a function.  This function is returned from `stache.compile()` via `HTMLSectionBuilder.prototype.compile()`, is usually called a "renderer," and takes as arguments scope, options, and nodeList.  Scope is the only required argument, but the fact that we're passing in a `nodeList` is key here.  This renderer gets the compiled AST for the Stache template, does a couple cursory checks on scope and options then does this:
 
 ```javascript
-  return compiled.hydrate(scope, options, nodeList);
+  compiled.hydrate(scope, options, nodeList);
 ```
 
 Let's assume that we have some callbacks to hydrate.  If the Stache only had raw text, the hydrator would just return a frag and not set anything up.  Let's see what happens when we have a scope lookup like `{{foo}}`, which triggers a callback to `makeLiveBindingBranchRenderer()` in mustache_core.js
 
 ```javascript
-	return function branchRenderer(scope, options, parentSectionNodeList, truthyRenderer, falseyRenderer) {
+	function branchRenderer(scope, options, parentSectionNodeList, truthyRenderer, falseyRenderer) {
     var nodeList = [this];
     nodeList.expression = expressionString;
     nodeLists.register(nodeList, null, parentSectionNodeList || true, state.directlyNested);
+	}
 ```
 
 `parentSectionNodeList` contains the node in the parent Stache rendering where the partial was called.  `nodeList = [this]` is now a nodeList containing the node for `{{foo}}`.  So you can see that the registration of the lookup expression is a child of the partial.  If the partial were later removed completely from the surrounding template, all of the nodes we're currently constructing would have to be unregistered and moved.  `state.directlyNested` is true here because we want the content of the rendered partial to completely replace any placeholder nodes.

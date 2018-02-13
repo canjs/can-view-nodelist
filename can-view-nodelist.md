@@ -67,7 +67,7 @@ var oldNodes = nodeLists.update(
 The children calling `.update()` end up adding to the parent `nodeList`'s `.replacements`
 array.  `nodList` might look like:
 
-```js
+```
 [
     TEXT_NODE<>  //original placeholder text node
     replacements: [
@@ -86,7 +86,7 @@ array.  `nodList` might look like:
 When `.update` is called on `nodeList`, the `renderedContentFragment` will have
 the final content for what is being rendered. For example, it will be a fragment like:
 
-```js
+```
 Items:
 <label></label>
 <label></label>
@@ -97,7 +97,7 @@ Items:
 
 1. Unregister any child nodeLists previously within `nodeList`. (there won't be any at this point)
 2. Make a Map of the first node in a `replacements` nodeList to its nodelist:
-   ```js
+   ```
    replacementsMap = Map({
        [<label>]: [
            <label>
@@ -111,7 +111,7 @@ Items:
    ```
 3. Go through the nodes in renderedContentFragment.  If any of them are in the replacementsMap,
    update `nodeList` accordingly. `nodeList` will then look like:
-   ```js
+   ```
    [
        TEXT_NODE<"Items: ">,
        [
