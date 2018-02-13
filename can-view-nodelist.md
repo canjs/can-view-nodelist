@@ -36,7 +36,7 @@ The basic use is
 
 A `target` is going to be hydrated:
 
-```javascript
+```js
 target.hydrate(scope)
 ```
 
@@ -44,7 +44,7 @@ This will call the callbacks on placeholder elements.
 
 Those callbacks register their placeholder like this:
 
-```javascript
+```js
 nodeLists.register(nodeList = [placeholderElement], null)
 ```
 
@@ -55,13 +55,13 @@ elements.
 
 After the content renders, it will call:
 
-```javascript
+```js
 // this doesn't actually update the dom. But this will
 // detach any "old" nodeLists within `nodeList`
 // but oldNodes are all the nodes within the nodeLists
 const oldNodes = nodeLists.update(
-    nodeList,
-    renderedContentFragment.childNodes );
+	nodeList,
+	renderedContentFragment.childNodes );
 ```
 
 The children calling `.update()` end up adding to the parent `nodeList`'s `.replacements`
