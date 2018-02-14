@@ -32,22 +32,26 @@ The other is when there is a supplied parent nodeList, as happens in nodes direc
 Here's an example of registering a list as a deep child (not a replacement) of another list:
 
 ```js
-const list1 = [document.createTextNode("")];
-const list2 = [document.createTextNode("a"), document.createTextNode("1")];
+const list1 = [ document.createTextNode( "" ) ];
+const list2 = [ document.createTextNode( "a" ), document.createTextNode( "1" ) ];
 
-nodeLists.register(list1, null, true)
-nodeLists.register(list2, null, list1)
+nodeLists.register( list1, null, true );
+nodeLists.register( list2, null, list1 );
 
-list1.deepChildren // -> []
-list1.newDeepChildren // -> [Array[2]]
-list1.newDeepChildren[0] === list2 // -> true
-list2.parentList === list1 // -> true
+list1.deepChildren; // -> []
+list1.newDeepChildren; // -> [Array[2]]
+list1.newDeepChildren[ 0 ] === list2; // -> true
+list2.parentList === list1; // -> true
 
-list3 = [document.createTextNode("b"), document.createTextNode("2"), document.createTextNode("ii")]
-nodeLists.register(list3, null, list1, true)
+const list3 = [
+	document.createTextNode( "b" ),
+	document.createTextNode( "2" ),
+	document.createTextNode( "ii" )
+];
+nodeLists.register( list3, null, list1, true );
 
-list1.replacements // -> [Array[3]]
-list3.parentList === list1 // -> true
+list1.replacements; // -> [Array[3]]
+list3.parentList === list1; // -> true
 ```
 
 `list1` now has a "new" deep child in `list2` and a replacement in `list3`.  These don't mean anything by themselves.  What has to happen from here is that the nodeList will be `update`d with new contents, which *may* contain `list2` and/or `list3`.
@@ -145,19 +149,23 @@ Here's the source of `can.view.live.replace()`:
 
 ```js
 {
-	replace: function (nodes, val, teardown) {
+	replace: function( nodes, val, teardown ) {
+
 		// #### replace
 		// Replaces one element with some content while keeping nodeLists data
 		// correct.
 		//
 		// Take a copy of old nodeList
-		const oldNodes = nodes.slice(0), frag = makeFrag(val);
+		const oldNodes = nodes.slice( 0 ), frag = makeFrag( val );
+
 		// Register a teardown callback
-		nodeLists.register(nodes, teardown);
+		nodeLists.register( nodes, teardown );
+
 		// Mark each node as belonging to the node list.
-		nodeLists.update(nodes, childNodes(frag));
+		nodeLists.update( nodes, childNodes( frag ) );
+
 		// Replace old nodes with new on the DOM
-		nodeLists.replace(oldNodes, frag);
+		nodeLists.replace( oldNodes, frag );
 		return nodes;
 	}
 }
@@ -168,17 +176,17 @@ This is generally how the flow works when working with the global nodeMap.  Firs
 For the second one we'll have to jump around a bit.  This flow starts when we render a partial into a parent Stache.  So we'll call `makeLiveBindingPartialRenderer()` from `can-stache`'s mustache_core.js.  This sets up a new parent nodeList based on the text node that's the placeholder for this partial before the Stache hydrates.
 
 ```js
-const nodeList = [this];
+const nodeList = [ this ];
 ```
 
 Farther down this function, a `renderer` callback references this nodelist and hydrates into this nodeList the fragment created by rendering the partial template.
 
 ```js
-renderer = function () {
-	if (typeof localPartialName === 'function') {
-		return localPartialName(scope, options, nodeList);
+renderer = function() {
+	if ( typeof localPartialName === "function" ) {
+		return localPartialName( scope, options, nodeList );
 	} else {
-		return core.getTemplateById(localPartialName)(scope, options, nodeList);
+		return core.getTemplateById( localPartialName )( scope, options, nodeList );
 	}
 };
 ```
@@ -186,16 +194,16 @@ renderer = function () {
 So now when this is called, `localPartialName` is either a function (from the scope), or it's a string (referencing the DOM) and gets resolved to a function.  This function is returned from `stache.compile()` via `HTMLSectionBuilder.prototype.compile()`, is usually called a "renderer," and takes as arguments scope, options, and nodeList.  Scope is the only required argument, but the fact that we're passing in a `nodeList` is key here.  This renderer gets the compiled AST for the Stache template, does a couple cursory checks on scope and options then does this:
 
 ```js
-compiled.hydrate(scope, options, nodeList);
+compiled.hydrate( scope, options, nodeList );
 ```
 
 Let's assume that we have some callbacks to hydrate.  If the Stache only had raw text, the hydrator would just return a frag and not set anything up.  Let's see what happens when we have a scope lookup like `{{foo}}`, which triggers a callback to `makeLiveBindingBranchRenderer()` in mustache_core.js
 
 ```js
-function branchRenderer(scope, options, parentSectionNodeList, truthyRenderer, falseyRenderer) {
-	const nodeList = [this];
+function branchRenderer( scope, options, parentSectionNodeList, truthyRenderer, falseyRenderer ) {
+	const nodeList = [ this ];
 	nodeList.expression = expressionString;
-	nodeLists.register(nodeList, null, parentSectionNodeList || true, state.directlyNested);
+	nodeLists.register( nodeList, null, parentSectionNodeList || true, state.directlyNested );
 }
 ```
 
@@ -204,18 +212,18 @@ function branchRenderer(scope, options, parentSectionNodeList, truthyRenderer, f
 Most of the function is now spent setting up a compute, but then we have to actually set up the rendering.  That is accomplished by using the library functions in [can-view-live](https://github.com/canjs/can-view-live), in this case one to render plain text:
 
 ```js
-live.text(this, computeValue, this.parentNode, nodeList);
+live.text( this, computeValue, this.parentNode, nodeList );
 ```
 
 Because we pass a nodeList into `live.text()`, it knows that the nodes should be updated and replaced through operating on the nodeList like this:
 
 ```js
-const node = el.ownerDocument.createTextNode(live.makeString(compute()));
-if(nodeList) {
+const node = el.ownerDocument.createTextNode( live.makeString( compute() ) );
+if ( nodeList ) {
 	nodeList.unregistered = data.teardownCheck;
 	data.nodeList = nodeList;
-	nodeLists.update(nodeList, [node]);
-	nodeLists.replace([el], node);
+	nodeLists.update( nodeList, [ node ] );
+	nodeLists.replace( [ el ], node );
 }
 ```
 

@@ -37,7 +37,7 @@ The basic use is
 A `target` is going to be hydrated:
 
 ```js
-target.hydrate(scope)
+target.hydrate( scope );
 ```
 
 This will call the callbacks on placeholder elements.
@@ -45,7 +45,7 @@ This will call the callbacks on placeholder elements.
 Those callbacks register their placeholder like this:
 
 ```js
-nodeLists.register(nodeList = [placeholderElement], null)
+nodeLists.register( nodeList = [ placeholderElement ], null );
 ```
 
 Then they render the content for the
