@@ -65,7 +65,7 @@ var oldNodes = nodeLists.update(
 ```
 
 The children calling `.update()` end up adding to the parent `nodeList`'s `.replacements`
-array.  `nodList` might look like:
+array.  `nodeList` might look like:
 
 ```js
 [
