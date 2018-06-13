@@ -9,7 +9,7 @@ var QUnit = require('steal-qunit');
 QUnit.module('can-view-nodelist');
 
 test('unregisters child nodeLists', function () {
-	expect(3);
+	expect(4);
 	// two spans that might have been created by #each
 	var spansFrag = fragment("<span>1</span><span>2</span>");
 	var spansList = makeArray(spansFrag.childNodes);
@@ -32,7 +32,7 @@ test('unregisters child nodeLists', function () {
 		ifChildNodes = ifPreHookupFrag.childNodes,
 		ifEls = makeArray(ifChildNodes);
 
-    
+
 	nodeLists.replace([ifChildNodes[1]], spansFrag);
 
 	// 4 because 2 elements are inserted, and ifChildNodes is live
@@ -54,4 +54,6 @@ test('unregisters child nodeLists', function () {
 
 	nodeLists.update(ifList, [document.createTextNode("empty")]);
 
+
+	QUnit.ok(labelList.isUnregistered, "labelList was unregistered");
 });
