@@ -5,11 +5,11 @@ var domMutate = require('can-dom-mutate/node');
 //
 
 // ### What's a nodeList?
-// 
+//
 // A nodelist is an array of DOM nodes (elements text nodes and DOM elements) and/or other
-// nodeLists, along with non-array-indexed properties that manage relationships between lists.  
+// nodeLists, along with non-array-indexed properties that manage relationships between lists.
 // These properties are:
-// 
+//
 // * deepChildren   children that couldn't be found by iterating over the nodeList when nesting
 // * nesting          nested level of a nodelist (parent's nesting plus 1)
 // * newDeepChildren  same as deepChildren but stored before registering with update()
@@ -65,7 +65,7 @@ var nodeMap = new Map(),
 // all live-bound elments are registered and updated when they change.
 //
 // For example, here's a template:
-//     
+//
 //     <div>
 //     	{{#if items.length}}
 //     		Items:
@@ -74,8 +74,8 @@ var nodeMap = new Map(),
 //     		{{/each}}
 //     	{{/if}}
 //     </div>
-// 
-// 
+//
+//
 // the above template, when rendered with data like:
 //
 //     data = new can.Map({
@@ -373,7 +373,7 @@ var nodeLists = {
 			for (var l = 0; l < deepChildren.length; l++) {
 				nodeLists.unregister(deepChildren[l], true);
 			}
-		}		
+		}
 
 		return nodes;
 	},
@@ -392,6 +392,7 @@ var nodeLists = {
 	*/
 	unregister: function (nodeList, isChild) {
 		var nodes = nodeLists.unregisterChildren(nodeList, true);
+		nodeList.isUnregistered = true;
 
 		// If an 'unregisted' function was provided during registration, remove
 		// it from the list, and call the function provided.
