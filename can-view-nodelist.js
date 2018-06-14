@@ -132,9 +132,12 @@ var nodeLists = {
 	*
 	*   @return {Array<Node>} The nodes that were removed from `nodeList`.
 	*/
-	update: function (nodeList, newNodes) {
+	update: function (nodeList, newNodes, oldNodes) {
 		// Unregister all childNodeLists.
-		var oldNodes = nodeLists.unregisterChildren(nodeList);
+		if(!oldNodes) {
+			// if oldNodes has been passed, we assume everything has already been unregistered.
+			oldNodes = nodeLists.unregisterChildren(nodeList);
+		}
 
 		var arr = [];
 		for (var i = 0, ref = arr.length = newNodes.length; i < ref; i++) {
