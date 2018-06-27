@@ -1,3 +1,4 @@
+"use strict";
 var namespace = require('can-namespace');
 var domMutate = require('can-dom-mutate/node');
 
