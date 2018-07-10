@@ -56,24 +56,3 @@ test('unregisters child nodeLists', function () {
 
 	QUnit.ok(labelList.isUnregistered, "labelList was unregistered");
 });
-
-test('unregisters newDeepChildren', function () {
-	expect(3);
-
-	var list1 = [];
-	var list2 = [
-		document.createTextNode("1"),
-		document.createTextNode("2")
-	];
-
-	nodeLists.register( list1, null, true );
-	nodeLists.register( list2, function() {
-		ok(true, "unregistered list2");
-	}, list1 );
-
-	QUnit.equal(list1.newDeepChildren[0].length, 2, "correct number of newDeepChildren");
-
-	nodeLists.update(list1, [document.createTextNode("3")]);
-
-	QUnit.ok(list2.isUnregistered, "list2 was unregistered");
-});
