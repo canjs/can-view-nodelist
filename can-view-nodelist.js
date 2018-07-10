@@ -379,6 +379,13 @@ var nodeLists = {
 			}
 		}
 
+		var newDeepChildren = nodeList.newDeepChildren;
+		if (newDeepChildren) {
+			for (var m = 0; m < newDeepChildren.length; m++) {
+				nodeLists.unregister(newDeepChildren[m], true);
+			}
+		}
+
 		return nodes;
 	},
 
