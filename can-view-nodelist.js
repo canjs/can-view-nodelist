@@ -313,6 +313,14 @@ var nodeLists = {
 	 *
 	 */
 	register: function (nodeList, unregistered, parent, directlyNested) {
+		//!steal-remove-start
+		if (process.env.NODE_ENV !== 'production') {
+			if(nodeLists._debug) {
+				nodeLists.allNodeLists.add(nodeList);
+			}
+		}
+		//!steal-remove-end
+
 		// If a unregistered callback has been provided assign it to the nodeList
 		// as a property to be called when the nodeList is unregistred.
 		nodeList.unregistered = unregistered;
@@ -489,4 +497,29 @@ var nodeLists = {
 	},
 	nodeMap: nodeMap
 };
+
+
+//!steal-remove-start
+if (process.env.NODE_ENV !== 'production') {
+	nodeLists.allNodeLists =  new Set();
+	nodeLists.logNodeList = function(nodeList){
+		console.group(nodeList.expression);
+		nodeList.forEach(function(node){
+			if(Array.isArray(node)) {
+				nodeLists.logNodeList(node);
+			} else {
+				console.log(node.nodeValue);
+			}
+		});
+		console.groupEnd();
+	};
+	nodeLists.getNodeLists = function(value){
+		return Array.from(nodeLists.allNodeLists).filter(function(nodeList){
+			return nodeList.expression.indexOf(value) >=0;
+		});
+	};
+}
+//!steal-remove-end
+
+
 module.exports = namespace.nodeLists = nodeLists;
