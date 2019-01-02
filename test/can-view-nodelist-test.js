@@ -56,3 +56,19 @@ test('unregisters child nodeLists', function () {
 
 	QUnit.ok(labelList.isUnregistered, "labelList was unregistered");
 });
+
+QUnit.test(".remove doesn't remove elements not in the parent", function() {
+	var notIn = document.createTextNode("test");
+
+	var parent = document.createElement("div");
+	parent.appendChild(document.createElement("span"));
+	parent.appendChild(document.createElement("section"));
+
+	try {
+		nodeLists.remove([parent.firstChild, notIn, parent.firstChild.nextSibling]);
+
+		QUnit.equal(parent.firstChild, null, "No children now");
+	} catch(err) {
+		QUnit.ok(false, err);
+	}
+});

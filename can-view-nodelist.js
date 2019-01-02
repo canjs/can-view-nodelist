@@ -483,8 +483,12 @@ var nodeLists = {
 	 */
 	remove: function(elementsToBeRemoved){
 		var parent = elementsToBeRemoved[0] && elementsToBeRemoved[0].parentNode;
+		var child;
 		for (var i = 0; i < elementsToBeRemoved.length; i++) {
-			domMutate.removeChild.call(parent, elementsToBeRemoved[i]);
+			child = elementsToBeRemoved[i];
+			if(child.parentNode === parent) {
+				domMutate.removeChild.call(parent, child);
+			}
 		}
 	},
 	nodeMap: nodeMap
