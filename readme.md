@@ -5,8 +5,6 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/canjs/can-view-nodelist/blob/master/LICENSE.md)
 [![npm version](https://badge.fury.io/js/can-view-nodelist.svg)](https://www.npmjs.com/package/can-view-nodelist)
 [![Travis build status](https://travis-ci.org/canjs/can-view-nodelist.svg?branch=master)](https://travis-ci.org/canjs/can-view-nodelist)
-[![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/canjs/can-view-nodelist?branch=master&svg=true)](https://ci.appveyor.com/project/matthewp/can-view-nodelist)
-[![Coverage status](https://coveralls.io/repos/github/canjs/can-view-nodelist/badge.svg?branch=master)](https://coveralls.io/github/canjs/can-view-nodelist?branch=master)
 [![Greenkeeper badge](https://badges.greenkeeper.io/canjs/can-view-nodelist.svg)](https://greenkeeper.io/)
 
 Adds nesting of text nodes
