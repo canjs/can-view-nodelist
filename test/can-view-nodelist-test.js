@@ -7,14 +7,14 @@ var QUnit = require('steal-qunit');
 
 QUnit.module('can-view-nodelist');
 
-test('unregisters child nodeLists', function () {
-	expect(4);
+QUnit.test('unregisters child nodeLists', function(assert) {
+	assert.expect(4);
 	// two spans that might have been created by #each
 	var spansFrag = fragment("<span>1</span><span>2</span>");
 	var spansList = canReflect.toArray(spansFrag.childNodes);
 
 	nodeLists.register(spansList, function(){
-		ok(true,"unregistered spansList");
+		assert.ok(true,"unregistered spansList");
 	});
 
 
@@ -23,7 +23,7 @@ test('unregisters child nodeLists', function () {
 	var labelList = canReflect.toArray(labelFrag.childNodes);
 
 	nodeLists.register( labelList, function(){
-		ok(true,"unregistered labelList");
+		assert.ok(true,"unregistered labelList");
 	});
 
 	// the html inside #if}
@@ -40,10 +40,10 @@ test('unregisters child nodeLists', function () {
 	var ifList = canReflect.toArray(ifPreHookupFrag.childNodes);
 
 	nodeLists.register(ifList, function(){
-		ok(true,"unregistered ifList");
+		assert.ok(true,"unregistered ifList");
 	});
 
-	deepEqual(ifList,[
+	assert.deepEqual(ifList,[
 		ifEls[0],
 		spansList,
 		ifEls[2],
@@ -54,10 +54,10 @@ test('unregisters child nodeLists', function () {
 	nodeLists.update(ifList, [document.createTextNode("empty")]);
 
 
-	QUnit.ok(labelList.isUnregistered, "labelList was unregistered");
+	assert.ok(labelList.isUnregistered, "labelList was unregistered");
 });
 
-QUnit.test(".remove doesn't remove elements not in the parent", function() {
+QUnit.test(".remove doesn't remove elements not in the parent", function(assert) {
 	var notIn = document.createTextNode("test");
 
 	var parent = document.createElement("div");
@@ -67,8 +67,8 @@ QUnit.test(".remove doesn't remove elements not in the parent", function() {
 	try {
 		nodeLists.remove([parent.firstChild, notIn, parent.firstChild.nextSibling]);
 
-		QUnit.equal(parent.firstChild, null, "No children now");
+		assert.equal(parent.firstChild, null, "No children now");
 	} catch(err) {
-		QUnit.ok(false, err);
+		assert.ok(false, err);
 	}
 });
