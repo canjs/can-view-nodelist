@@ -32,7 +32,7 @@
     "donejs"
   ],
   "dependencies": {
-    "can-dom-mutate": "<2.0.0",
+    "can-dom-mutate": "2.0.6",
     "can-namespace": "1.0.0"
   },
   "devDependencies": {
